@@ -31,7 +31,6 @@ docker run -d --name kong-cache \
   -e "KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl" \
   -e "KONG_PLUGINS=bundled,response-cache" \
   -e "KONG_ERROR_DEFAULT_TYPE=application/json" \
-  -e "KONG_PLUGIN_PRIORITY_JWT_OIDC_VALIDATE=1060" \
   -e 'KONG_TRACING_INSTRUMENTATIONS=all' \
   -e 'KONG_TRACING_SAMPLING_RATE=1' \
   -p 8000:8000 \
