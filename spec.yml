@@ -1,0 +1,40 @@
+_format_version: '3.0'
+_transform: false
+services:
+- name: my-service
+  url: https://example.com
+  plugins:
+  - name: response-cache
+    config:
+      content_type:
+      - text/html; charset=UTF-8
+      cache_ttl: 5
+      redis:
+        host: host.docker.internal
+        port: 6379
+        timeout:
+          connect: 100
+          read: 1500
+          send: 2500
+        ssl:
+          enabled: false
+          # enabled: true
+          verify: false
+          server_name: test
+        circuit_breaker:
+          # enabled: true
+          # enabled: false
+          fails_threshold: 2
+          ttl: 5
+        # username: null
+        # password: null
+        database: 1
+  - name: opentelemetry
+    config:
+      resource_attributes:
+        "service.name": "kong-dev"
+      endpoint: http://host.docker.internal:4318/v1/traces
+  routes:
+  - name: my-route
+    paths:
+    - /testroute

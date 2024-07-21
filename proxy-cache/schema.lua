@@ -218,8 +218,5 @@ return {
     },
 
     entity_checks = {
-        {
-
-        }
     },
 }
