@@ -4,16 +4,13 @@ local redis        = require "resty.redis"
 
 local ngx          = ngx
 local type         = type
-local time         = ngx.time
 local setmetatable = setmetatable
-
 
 local _M = {}
 
 local function is_present(str)
   return str and str ~= "" and str ~= ngx.null
 end
-
 
 local function get_connection(opts)
   local red, err_redis = redis:new()
@@ -71,14 +68,9 @@ function _M.new(opts)
   })
 end
 
-function _M:store(key, req_obj, req_ttl)
-  local ttl = req_ttl or self.opts.ttl
-
-  if type(key) ~= "string" then
-    return nil, "key must be a string"
-  end
-
-  local instance, err_conn = get_connection(self.opts)
+local function store_cache_value(_, opts, key, req_obj, req_ttl)
+  local ttl = req_ttl or opts.ttl
+  local instance, err_conn = get_connection(opts)
   if err_conn or not instance then
     return nil, err_conn
   end
@@ -98,6 +90,14 @@ function _M:store(key, req_obj, req_ttl)
     kong.log.err("failed to set Redis keepalive: ", err2)
     return nil, err2
   end
+end
+
+function _M:store(key, req_obj, req_ttl)
+  if type(key) ~= "string" then
+    return nil, "key must be a string"
+  end
+
+  ngx.timer.at(0, store_cache_value, self.opts ,key, req_obj, req_ttl)
 
   return true
 end
@@ -113,7 +113,7 @@ function _M:fetch(key)
   end
 
   local cache_req, err = instance:hgetall(key)
-  if cache_req == ngx.null then
+  if cache_req == ngx.null or not cache_req then
     if not err then
       return nil, "request object not in cache"
     else
