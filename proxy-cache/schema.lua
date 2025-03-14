@@ -143,6 +143,14 @@ return {
                 { host = typedefs.host },
                 { port = typedefs.port({ default = 6379 }), },
                 {
+                  log_level = {
+                    description = "log level for non error messages",
+                    type = "string",
+                    required = true,
+                    default = "debug"
+                  }
+                },
+                {
                   idle_timeout = {
                     type = "number",
                     required = true,
@@ -238,15 +246,7 @@ return {
                     type = "integer",
                     default = 0
                   }
-                },
-                {
-                  log_level = {
-                    description = "The backing data store in which to hold cache entities.",
-                    type = "string",
-                    required = true,
-                    default = "notice"
-                  }
-                },
+                }
               }
             }
           },
