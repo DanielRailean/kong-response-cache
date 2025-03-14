@@ -1,5 +1,6 @@
 local strategies = require "kong.plugins.proxy-cache.strategies"
 local typedefs = require "kong.db.schema.typedefs"
+-- https://github.com/Kong/kong/blob/master/kong/tools/redis/schema.lua
 local redis_schema = require "kong.tools.redis.schema"
 
 local ngx = ngx
