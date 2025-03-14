@@ -9,9 +9,12 @@ services:
       strategy: redis
       content_type:
       - application/json; charset=utf-8
+      cache_ttl: 3600
       redis:
         host: host.docker.internal
         port: 6379
+        log_level: err
+        # database: 1
   routes:
   - name: my-route
     paths:
