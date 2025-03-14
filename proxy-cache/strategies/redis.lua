@@ -115,14 +115,13 @@ function _M:fetch(key)
   end
 
   local cache_req, err = instance:hgetall(key)
-  if cache_req == ngx.null or not cache_req then
+  if cache_req and #cache_req < 2 then
     if not err then
       return nil, "request object not in cache"
     else
       return nil, err
     end
   end
-
 
   local ok, err2 = instance:set_keepalive(10000, 100)
   if not ok then
