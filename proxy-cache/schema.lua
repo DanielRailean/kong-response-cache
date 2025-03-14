@@ -1,8 +1,5 @@
 local strategies = require "kong.plugins.proxy-cache.strategies"
 local typedefs = require "kong.db.schema.typedefs"
--- https://github.com/Kong/kong/blob/master/kong/tools/redis/schema.lua
-local redis_schema = require "kong.tools.redis.schema"
-
 local ngx = ngx
 
 
@@ -14,98 +11,214 @@ local function check_shdict(name)
   return true
 end
 
-
 return {
   name = "proxy-cache",
   fields = {
     { protocols = typedefs.protocols },
-    { config = {
+    {
+      config = {
         type = "record",
         fields = {
-          { response_code = { description = "Upstream response status code considered cacheable.", type = "array",
-            default = { 200, 301, 404 },
-            elements = { type = "integer", between = {100, 900} },
-            len_min = 1,
-            required = true,
-          }},
-          { request_method = { description = "Downstream request methods considered cacheable.", type = "array",
-            default = { "GET", "HEAD" },
-            elements = {
+          {
+            response_code = {
+              description = "Upstream response status code considered cacheable.",
+              type = "array",
+              default = { 200, 301, 404 },
+              elements = { type = "integer", between = { 100, 900 } },
+              len_min = 1,
+              required = true,
+            }
+          },
+          {
+            request_method = {
+              description = "Downstream request methods considered cacheable.",
+              type = "array",
+              default = { "GET", "HEAD" },
+              elements = {
+                type = "string",
+                one_of = { "HEAD", "GET", "POST", "PATCH", "PUT" },
+              },
+              required = true
+            }
+          },
+          {
+            content_type = {
+              description =
+              "Upstream response content types considered cacheable. The plugin performs an **exact match** against each specified value.",
+              type = "array",
+              default = { "text/plain", "application/json" },
+              elements = { type = "string" },
+              required = true,
+            }
+          },
+          {
+            cache_ttl = {
+              description = "TTL, in seconds, of cache entities.",
+              type = "integer",
+              default = 300,
+              gt = 0,
+            }
+          },
+          {
+            strategy = {
+              description = "The backing data store in which to hold cache entities.",
               type = "string",
-              one_of = { "HEAD", "GET", "POST", "PATCH", "PUT" },
-            },
-            required = true
-          }},
-          { content_type = { description = "Upstream response content types considered cacheable. The plugin performs an **exact match** against each specified value.", type = "array",
-            default = { "text/plain","application/json" },
-            elements = { type = "string" },
-            required = true,
-          }},
-          { cache_ttl = { description = "TTL, in seconds, of cache entities.", type = "integer",
-            default = 300,
-            gt = 0,
-          }},
-          { strategy = { description = "The backing data store in which to hold cache entities.", type = "string",
-            one_of = strategies.STRATEGY_TYPES,
-            required = true,
-          }},
-          { cache_control = { description = "When enabled, respect the Cache-Control behaviors defined in RFC7234.", type = "boolean",
-            default = false,
-            required = true,
-          }},
-          { ignore_uri_case = {
-            type = "boolean",
-            default = false,
-            required = false,
-          }},
-          { storage_ttl = { description = "Number of seconds to keep resources in the storage backend. This value is independent of `cache_ttl` or resource TTLs defined by Cache-Control behaviors.", type = "integer",
-          }},
-          { memory = {
-            type = "record",
-            fields = {
-              { dictionary_name = { description = "The name of the shared dictionary in which to hold cache entities when the memory strategy is selected. Note that this dictionary currently must be defined manually in the Kong Nginx template.", type = "string",
-                required = true,
-                default = "kong_db_cache",
-              }},
-            },
-          }},
-          { vary_query_params = { description = "Relevant query parameters considered for the cache key. If undefined, all params are taken into consideration.", type = "array",
-            elements = { type = "string" },
-          }},
-          { vary_headers = { description = "Relevant headers considered for the cache key. If undefined, none of the headers are taken into consideration.", type = "array",
-            elements = { type = "string" },
-          }},
-          { response_headers = {
-            description = "Caching related diagnostic headers that should be included in cached responses",
-            type = "record",
-            fields = {
-              { age  = {type = "boolean",  default = true} },
-              { ["X-Cache-Status"]  = {type = "boolean",  default = true} },
-              { ["X-Cache-Key"]  = {type = "boolean",  default = true} },
-            },
-          }},
-          { redis = redis_schema.config_schema },
+              one_of = strategies.STRATEGY_TYPES,
+              required = true,
+            }
+          },
+          {
+            cache_control = {
+              description = "When enabled, respect the Cache-Control behaviors defined in RFC7234.",
+              type = "boolean",
+              default = false,
+              required = true,
+            }
+          },
+          {
+            ignore_uri_case = {
+              type = "boolean",
+              default = false,
+              required = false,
+            }
+          },
+          {
+            storage_ttl = {
+              description =
+              "Number of seconds to keep resources in the storage backend. This value is independent of `cache_ttl` or resource TTLs defined by Cache-Control behaviors.",
+              type =
+              "integer",
+            }
+          },
+          {
+            memory = {
+              type = "record",
+              fields = {
+                {
+                  dictionary_name = {
+                    description =
+                    "The name of the shared dictionary in which to hold cache entities when the memory strategy is selected. Note that this dictionary currently must be defined manually in the Kong Nginx template.",
+                    type = "string",
+                    required = true,
+                    default = "kong_db_cache",
+                  }
+                },
+              },
+            }
+          },
+          {
+            vary_query_params = {
+              description =
+              "Relevant query parameters considered for the cache key. If undefined, all params are taken into consideration.",
+              type = "array",
+              elements = { type = "string" },
+            }
+          },
+          {
+            vary_headers = {
+              description =
+              "Relevant headers considered for the cache key. If undefined, none of the headers are taken into consideration.",
+              type = "array",
+              elements = { type = "string" },
+            }
+          },
+          {
+            response_headers = {
+              description = "Caching related diagnostic headers that should be included in cached responses",
+              type = "record",
+              fields = {
+                { age = { type = "boolean", default = true } },
+                { ["X-Cache-Status"] = { type = "boolean", default = true } },
+                { ["X-Cache-Key"] = { type = "boolean", default = true } },
+              },
+            }
+          },
+          {
+            redis =
+            -- https://github.com/Kong/kong/blob/master/kong/tools/redis/schema.lua
+            {
+              type = "record",
+              description = "Redis configuration",
+              fields = {
+                { host = typedefs.host },
+                { port = typedefs.port({ default = 6379 }), },
+                { timeout = typedefs.timeout { default = 2000 } },
+                {
+                  username = {
+                    description =
+                    "Username to use for Redis connections. If undefined, ACL authentication won't be performed. This requires Redis v6.0.0+. To be compatible with Redis v5.x.y, you can set it to `default`.",
+                    type = "string",
+                    referenceable = true
+                  }
+                },
+                {
+                  password = {
+                    description =
+                    "Password to use for Redis connections. If undefined, no AUTH commands are sent to Redis.",
+                    type = "string",
+                    encrypted = true,
+                    referenceable = true,
+                    len_min = 0
+                  }
+                },
+                {
+                  database = {
+                    description = "Database to use for the Redis connection when using the `redis` strategy",
+                    type = "integer",
+                    default = 0
+                  }
+                },
+                {
+                  ssl = {
+                    description = "If set to true, uses SSL to connect to Redis.",
+                    type = "boolean",
+                    required = false,
+                    default = false
+                  }
+                },
+                {
+                  ssl_verify = {
+                    description =
+                    "If set to true, verifies the validity of the server SSL certificate. If setting this parameter, also configure `lua_ssl_trusted_certificate` in `kong.conf` to specify the CA (or server) certificate used by your Redis server. You may also need to configure `lua_ssl_verify_depth` accordingly.",
+                    type = "boolean",
+                    required = false,
+                    default = false
+                  }
+                },
+                { server_name = typedefs.sni { required = false } },
+                {
+                  log_level = {
+                    description = "The backing data store in which to hold cache entities.",
+                    type = "string",
+                    required = true,
+                    default = "notice"
+                  }
+                },
+              }
+            }
+          },
         },
       }
     },
   },
 
   entity_checks = {
-    { custom_entity_check = {
-      field_sources = { "config" },
-      fn = function(entity)
-        local config = entity.config
+    {
+      custom_entity_check = {
+        field_sources = { "config" },
+        fn = function(entity)
+          local config = entity.config
 
-        if config.strategy == "memory" then
-          local ok, err = check_shdict(config.memory.dictionary_name)
-          if not ok then
-            return nil, err
+          if config.strategy == "memory" then
+            local ok, err = check_shdict(config.memory.dictionary_name)
+            if not ok then
+              return nil, err
+            end
           end
 
+          return true
         end
-
-        return true
-      end
-    }},
+      }
+    },
   },
 }

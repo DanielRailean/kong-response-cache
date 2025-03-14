@@ -54,7 +54,7 @@ local function get_connection(opts)
       end
     end
   end
-  kong.log.debug("connection reused " .. times .. " times")
+  kong.log[opts.log_level]("connection reused " .. times .. " times")
 
   return red
 end
@@ -117,6 +117,7 @@ function _M:fetch(key)
   local cache_req, err = instance:hgetall(key)
   if cache_req and #cache_req < 2 then
     if not err then
+      -- this specific string is needed
       return nil, "request object not in cache"
     else
       return nil, err
@@ -129,14 +130,15 @@ function _M:fetch(key)
     return nil, err2
   end
 
-  local map     = instance:array_to_hash(cache_req)
-  map.headers   = cjson.decode(map.headers)
-  map.version   = tonumber(map.version)
-  map.status    = tonumber(map.status)
-  map.body_len  = tonumber(map.body_len)
-  map.timestamp = tonumber(map.timestamp)
-  map.ttl       = tonumber(map.ttl)
-  return map
+  cache_req     = instance:array_to_hash(cache_req)
+  -- everything returned will be a string
+  cache_req.headers   = cjson.decode(cache_req.headers)
+  cache_req.version   = tonumber(cache_req.version)
+  cache_req.status    = tonumber(cache_req.status)
+  cache_req.body_len  = tonumber(cache_req.body_len)
+  cache_req.timestamp = tonumber(cache_req.timestamp)
+  cache_req.ttl       = tonumber(cache_req.ttl)
+  return cache_req
 end
 
 function _M:purge(key)
