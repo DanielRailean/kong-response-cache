@@ -142,7 +142,78 @@ return {
               fields = {
                 { host = typedefs.host },
                 { port = typedefs.port({ default = 6379 }), },
-                { timeout = typedefs.timeout { default = 2000 } },
+                {
+                  idle_timeout = {
+                    type = "number",
+                    required = true,
+                    default = 20 * 1000,
+                    between = { 1, 60 * 1000 }
+                  }
+                },
+                {
+                  pool_size = {
+                    type = "number",
+                    required = true,
+                    default = 128,
+                    between = { 1, 1024 }
+                  }
+                },
+                {
+                  tls = {
+                    type = "record",
+                    fields = {
+                      {
+                        enabled = {
+                          type = "boolean",
+                          required = false
+                        }
+                      },
+                      {
+                        verify = {
+                          type = "boolean",
+                          required = false
+                        }
+                      },
+                      {
+                        server_name = {
+                          type = "string",
+                          required = false
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  timeout = {
+                    type = "record",
+                    fields = {
+                      {
+                        connect = {
+                          type = "number",
+                          default = 50,
+                          required = true,
+                          between = { 1, 5000 }
+                        }
+                      },
+                      {
+                        read = {
+                          type = "number",
+                          default = 50,
+                          required = true,
+                          between = { 1, 5000 }
+                        }
+                      },
+                      {
+                        send = {
+                          type = "number",
+                          default = 50,
+                          required = true,
+                          between = { 1, 5000 }
+                        }
+                      }
+                    }
+                  }
+                },
                 {
                   username = {
                     description =
@@ -168,24 +239,6 @@ return {
                     default = 0
                   }
                 },
-                {
-                  ssl = {
-                    description = "If set to true, uses SSL to connect to Redis.",
-                    type = "boolean",
-                    required = false,
-                    default = false
-                  }
-                },
-                {
-                  ssl_verify = {
-                    description =
-                    "If set to true, verifies the validity of the server SSL certificate. If setting this parameter, also configure `lua_ssl_trusted_certificate` in `kong.conf` to specify the CA (or server) certificate used by your Redis server. You may also need to configure `lua_ssl_verify_depth` accordingly.",
-                    type = "boolean",
-                    required = false,
-                    default = false
-                  }
-                },
-                { server_name = typedefs.sni { required = false } },
                 {
                   log_level = {
                     description = "The backing data store in which to hold cache entities.",

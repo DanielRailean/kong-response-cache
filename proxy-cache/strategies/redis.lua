@@ -20,10 +20,14 @@ local function get_connection(opts)
     return nil, err_redis
   end
 
-  local redis_opts = {}
-  redis_opts.pool = opts.database and opts.host .. ":" .. opts.port .. ":" .. opts.database
+  local redis_opts = {
+    pool = opts.database and opts.host .. ":" .. opts.port .. ":" .. opts.database,
+    ssl = opts.tls.enabled,
+    ssl_verify = opts.tls.verify,
+    server_name = opts.tls.server_name
+  }
 
-  red:set_timeout(opts.timeout)
+  red:set_timeouts(opts.timeout.connect, opts.timeout.send, opts.timeout.read)
 
   local ok, err = red:connect(opts.host, opts.port, redis_opts)
   if not ok then
@@ -86,7 +90,7 @@ local function store_cache_value(_, opts, key, req_obj, req_ttl)
     return err
   end
 
-  local ok, err2 = instance:set_keepalive(10000, 100)
+  local ok, err2 = instance:set_keepalive(opts.idle_timeout, opts.pool_size)
   if not ok then
     kong.log.err("failed to set Redis keepalive: ", err2)
     return err2
@@ -124,7 +128,7 @@ function _M:fetch(key)
     end
   end
 
-  local ok, err2 = instance:set_keepalive(10000, 100)
+  local ok, err2 = instance:set_keepalive(self.opts.idle_timeout, self.opts.pool_size)
   if not ok then
     kong.log.err("failed to set Redis keepalive: ", err2)
     return nil, err2
