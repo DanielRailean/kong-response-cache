@@ -1,0 +1,16 @@
+_format_version: '3.0'
+_transform: false
+services:
+- name: my-service
+  url: https://example.com
+  plugins:
+  - name: proxy-cache
+    config:
+      strategy: redis
+      redis:
+        host: localhost
+        port: 6379
+  routes:
+  - name: my-route
+    paths:
+    - /testroute

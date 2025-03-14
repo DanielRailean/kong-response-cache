@@ -1,6 +1,6 @@
 local strategies = require "kong.plugins.proxy-cache.strategies"
 local typedefs = require "kong.db.schema.typedefs"
-
+local redis_schema = require "kong.tools.redis.schema"
 
 local ngx = ngx
 
@@ -83,8 +83,7 @@ return {
               { ["X-Cache-Key"]  = {type = "boolean",  default = true} },
             },
           }},
-
-
+          { redis = redis_schema.config_schema },
         },
       }
     },
