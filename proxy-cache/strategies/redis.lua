@@ -1,12 +1,12 @@
 local cjson        = require "cjson.safe"
 -- https://github.com/openresty/lua-resty-redis
 local redis        = require "resty.redis"
-
+local kong         = kong
 local ngx          = ngx
 local type         = type
 local setmetatable = setmetatable
 
-local _M = {}
+local _M           = {}
 
 local function is_present(str)
   return str and str ~= "" and str ~= ngx.null
@@ -54,6 +54,7 @@ local function get_connection(opts)
       end
     end
   end
+  kong.log.debug("connection reused " .. times .. " times")
 
   return red
 end
@@ -82,13 +83,13 @@ local function store_cache_value(_, opts, key, req_obj, req_ttl)
   local _, err = instance:commit_pipeline()
   if err then
     kong.log.err("failed to commit the cache value to Redis: ", err)
-    return nil, err
+    return err
   end
 
   local ok, err2 = instance:set_keepalive(10000, 100)
   if not ok then
     kong.log.err("failed to set Redis keepalive: ", err2)
-    return nil, err2
+    return err2
   end
 end
 
@@ -97,7 +98,8 @@ function _M:store(key, req_obj, req_ttl)
     return nil, "key must be a string"
   end
 
-  ngx.timer.at(0, store_cache_value, self.opts ,key, req_obj, req_ttl)
+  req_obj.headers = cjson.encode(req_obj.headers)
+  ngx.timer.at(0, store_cache_value, self.opts, key, req_obj, req_ttl)
 
   return true
 end
@@ -128,7 +130,14 @@ function _M:fetch(key)
     return nil, err2
   end
 
-  return cache_req
+  local map     = instance:array_to_hash(cache_req)
+  map.headers   = cjson.decode(map.headers)
+  map.version   = tonumber(map.version)
+  map.status    = tonumber(map.status)
+  map.body_len  = tonumber(map.body_len)
+  map.timestamp = tonumber(map.timestamp)
+  map.ttl       = tonumber(map.ttl)
+  return map
 end
 
 function _M:purge(key)
@@ -144,7 +153,7 @@ function _M:purge(key)
   return true
 end
 
--- can't see it being used
+-- can't see it being used in handler, but it's present in the mem strategy
 -- function _M:touch(key, req_ttl, timestamp)
 --   if type(key) ~= "string" then
 --     return nil, "key must be a string"

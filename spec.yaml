@@ -7,8 +7,10 @@ services:
   - name: proxy-cache
     config:
       strategy: redis
+      content_type:
+      - application/json; charset=utf-8
       redis:
-        host: localhost
+        host: host.docker.internal
         port: 6379
   routes:
   - name: my-route
