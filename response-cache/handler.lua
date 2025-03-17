@@ -1,5 +1,5 @@
 local require     = require
-local cache_key   = require "kong.plugins.proxy-cache.cache_key"
+local cache_key   = require "kong.plugins.response-cache.cache_key"
 local kong_meta   = require "kong.meta"
 local mime_type   = require "kong.tools.mime_type"
 local nkeys       = require "table.nkeys"
@@ -23,7 +23,7 @@ local calculate_resource_ttl = require("kong.tools.http").calculate_resource_ttl
 
 
 
-local STRATEGY_PATH = "kong.plugins.proxy-cache.strategies"
+local STRATEGY_PATH = "kong.plugins.response-cache.strategies"
 local CACHE_VERSION = 1
 local EMPTY = require("kong.tools.table").EMPTY
 
@@ -198,7 +198,7 @@ function ProxyCacheHandler:init_worker()
   -- worker events as well
   local unpack = unpack
 
-  kong.cluster_events:subscribe("proxy-cache:purge", function(data)
+  kong.cluster_events:subscribe("response-cache:purge", function(data)
     kong.log.err("handling purge of '", data, "'")
 
     local plugin_id, cache_key = unpack(split(data, ":"))

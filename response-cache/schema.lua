@@ -1,4 +1,4 @@
-local strategies = require "kong.plugins.proxy-cache.strategies"
+local strategies = require "kong.plugins.response-cache.strategies"
 local typedefs = require "kong.db.schema.typedefs"
 local ngx = ngx
 
@@ -12,7 +12,7 @@ local function check_shdict(name)
 end
 
 return {
-  name = "proxy-cache",
+  name = "response-cache",
   fields = {
     { protocols = typedefs.protocols },
     {

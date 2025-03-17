@@ -1,4 +1,4 @@
-local STRATEGY_PATH = "kong.plugins.proxy-cache.strategies"
+local STRATEGY_PATH = "kong.plugins.response-cache.strategies"
 
 
 local require = require
@@ -9,7 +9,7 @@ local fmt = string.format
 local function broadcast_purge(plugin_id, cache_key)
   local data = fmt("%s:%s", plugin_id, cache_key or "nil")
   kong.log.debug("broadcasting purge '", data, "'")
-  return kong.cluster_events:broadcast("proxy-cache:purge", data)
+  return kong.cluster_events:broadcast("response-cache:purge", data)
 end
 
 
@@ -25,7 +25,7 @@ local function each_proxy_cache()
       if not plugin then
         return
       end
-      if plugin.name == "proxy-cache" then
+      if plugin.name == "response-cache" then
         return plugin
       end
     end
@@ -34,8 +34,8 @@ end
 
 
 return {
-  ["/proxy-cache"] = {
-    resource = "proxy-cache",
+  ["/response-cache"] = {
+    resource = "response-cache",
 
     DELETE = function()
       for plugin in each_proxy_cache() do
@@ -63,8 +63,8 @@ return {
       return kong.response.exit(204)
     end
   },
-  ["/proxy-cache/:cache_key"] = {
-    resource = "proxy-cache",
+  ["/response-cache/:cache_key"] = {
+    resource = "response-cache",
 
     GET = function(self)
       for plugin in each_proxy_cache() do
@@ -125,8 +125,8 @@ return {
       return kong.response.exit(404)
     end,
   },
-  ["/proxy-cache/:plugin_id/caches/:cache_key"] = {
-    resource = "proxy-cache",
+  ["/response-cache/:plugin_id/caches/:cache_key"] = {
+    resource = "response-cache",
 
     GET = function(self)
       local plugin, err = kong.db.plugins:select({ id = self.params.plugin_id })

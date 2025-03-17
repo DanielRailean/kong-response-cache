@@ -4,7 +4,7 @@ services:
 - name: my-service
   url: https://example.com
   plugins:
-  - name: proxy-cache
+  - name: response-cache
     config:
       strategy: redis
       content_type:
