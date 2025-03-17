@@ -135,6 +135,7 @@ return {
           },
           {
             redis =
+            -- the base for the config is fetched from
             -- https://github.com/Kong/kong/blob/master/kong/tools/redis/schema.lua
             {
               type = "record",
@@ -151,11 +152,14 @@ return {
                   }
                 },
                 {
-                  idle_timeout = {
+                  -- value is in ms
+                  idle_timeout_ms = {
                     type = "number",
                     required = true,
-                    default = 20 * 1000,
-                    between = { 1, 60 * 1000 }
+                    -- defaults to 30s
+                    default = 30 * 1000,
+                    -- between 1s and 5m
+                    between = { 1, 5 * 60 * 1000 }
                   }
                 },
                 {
@@ -163,7 +167,7 @@ return {
                     type = "number",
                     required = true,
                     default = 128,
-                    between = { 1, 1024 }
+                    between = { 1, 2048 }
                   }
                 },
                 {

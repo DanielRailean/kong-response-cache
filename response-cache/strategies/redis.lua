@@ -90,7 +90,7 @@ local function store_cache_value(_, opts, key, req_obj, req_ttl)
     return err
   end
 
-  local ok, err2 = instance:set_keepalive(opts.idle_timeout, opts.pool_size)
+  local ok, err2 = instance:set_keepalive(opts.idle_timeout_ms, opts.pool_size)
   if not ok then
     kong.log.err("failed to set Redis keepalive: ", err2)
     return err2
