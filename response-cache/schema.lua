@@ -250,7 +250,36 @@ return {
                     type = "integer",
                     default = 0
                   }
-                }
+                },
+                -- to be readded later
+                -- {
+                --   circuit_breaker = {
+                --     type = "record",
+                --     fields = {
+                --       {
+                --         enabled = {
+                --           type = "boolean",
+                --           required = true,
+                --           default = true
+                --         }
+                --       },
+                --       {
+                --         fails_threshold = {
+                --           type = "number",
+                --           default = 10,
+                --           between = { 1, 1000 }
+                --         }
+                --       },
+                --       {
+                --         ttl = {
+                --           type = "number",
+                --           default = 60,
+                --           between = { 1, 24 * 60 * 60 }
+                --         }
+                --       }
+                --     }
+                --   }
+                -- },
               }
             }
           },
