@@ -133,6 +133,15 @@ return {
               },
             }
           },
+          -- present in proxy cache advanced, might be added later
+          -- {
+          --   bypass_on_err = {
+          --     description = "When enabled, the request will be served by the upstream if caching fails.",
+          --     type = "boolean",
+          --     default = true,
+          --     required = true,
+          --   }
+          -- },
           {
             redis =
             -- the base for the config is fetched from
