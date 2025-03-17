@@ -11,7 +11,7 @@ local sha256_hex = require("kong.tools.sha256").sha256_hex
 local _M = {}
 
 
-local EMPTY = require("kong.tools.table").EMPTY
+local EMPTY = {}
 
 
 local function keys(t)
