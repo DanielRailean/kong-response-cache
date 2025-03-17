@@ -176,7 +176,7 @@ return {
                   pool_size = {
                     type = "number",
                     required = true,
-                    default = 128,
+                    default = 256,
                     between = { 1, 2048 }
                   }
                 },

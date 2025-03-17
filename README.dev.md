@@ -10,11 +10,7 @@ docker run --name redis -p 6379:6379 -e ALLOW_EMPTY_PASSWORD=yes -d bitnami/redi
 
 ### start Kong
 
-Use export the environment variable for the folder containing the handler
-
-```sh
-export path_to_folder_containing_handler="."
-```
+replace the env. var. with the actual path
 
 ```sh
 docker run --add-host=host.docker.internal:host-gateway -d --name kong-redis \
