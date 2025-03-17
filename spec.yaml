@@ -1,0 +1,21 @@
+_format_version: '3.0'
+_transform: false
+services:
+- name: my-service
+  url: https://example.com
+  plugins:
+  - name: proxy-cache
+    config:
+      strategy: redis
+      content_type:
+      - application/json; charset=utf-8
+      cache_ttl: 3600
+      redis:
+        host: host.docker.internal
+        port: 6379
+        log_level: err
+        # database: 1
+  routes:
+  - name: my-route
+    paths:
+    - /testroute
