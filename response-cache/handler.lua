@@ -23,7 +23,7 @@ local calculate_resource_ttl = require("kong.tools.http").calculate_resource_ttl
 
 
 
-local STRATEGY_PATH = "kong.plugins.response-cache.strategies"
+local STRATEGY_PATH = "kong.plugins.response-cache.strategies_init"
 local CACHE_VERSION = 1
 local EMPTY = require("kong.tools.table").EMPTY
 

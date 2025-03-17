@@ -1,4 +1,4 @@
-local strategies = require "kong.plugins.response-cache.strategies"
+local strategies = require "kong.plugins.response-cache.strategies_init"
 local typedefs = require "kong.db.schema.typedefs"
 local ngx = ngx
 
