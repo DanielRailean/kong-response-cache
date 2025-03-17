@@ -65,6 +65,7 @@ return {
               type = "string",
               one_of = strategies.STRATEGY_TYPES,
               required = true,
+              default = "redis"
             }
           },
           {
