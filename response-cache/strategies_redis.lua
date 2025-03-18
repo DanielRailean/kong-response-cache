@@ -12,7 +12,7 @@ local function is_present(str)
   return str and str ~= "" and str ~= ngx.null
 end
 
-local function get_connection(opts)
+local function get_connection(opts, operation_tag)
   local red, err_redis = redis:new()
 
   if err_redis then
@@ -61,7 +61,7 @@ local function get_connection(opts)
       end
     end
   end
-  kong.log[opts.log_level]("connection reused " .. times .. " times")
+  kong.log[opts.log_level]("[" .. operation_tag .. "]" .. "connection reused " .. times .. " times")
 
   return red
 end
@@ -78,7 +78,7 @@ end
 
 local function store_cache_value(_, opts, key, req_obj, req_ttl)
   local ttl = req_ttl or opts.ttl
-  local instance, err_conn = get_connection(opts)
+  local instance, err_conn = get_connection(opts, "set")
   if err_conn or not instance then
     return nil, err_conn
   end
@@ -116,7 +116,7 @@ function _M:fetch(key)
     return nil, "key must be a string"
   end
 
-  local instance, err_conn = get_connection(self.opts)
+  local instance, err_conn = get_connection(self.opts, "get")
   if err_conn or not instance then
     return nil, err_conn
   end
@@ -137,7 +137,7 @@ function _M:fetch(key)
     return nil, err2
   end
 
-  cache_req     = instance:array_to_hash(cache_req)
+  cache_req           = instance:array_to_hash(cache_req)
   -- everything returned will be a string
   cache_req.headers   = cjson.decode(cache_req.headers)
   cache_req.version   = tonumber(cache_req.version)
@@ -149,7 +149,7 @@ function _M:fetch(key)
 end
 
 function _M:purge(key)
-  local instance, err_conn = get_connection(self.opts)
+  local instance, err_conn = get_connection(self.opts, "purge")
   if err_conn or not instance then
     return nil, err_conn
   end
@@ -189,7 +189,7 @@ end
 
 
 function _M:flush()
-  local instance, err_conn = get_connection(self.opts)
+  local instance, err_conn = get_connection(self.opts, "flush")
   if err_conn or not instance then
     return nil, err_conn
   end
