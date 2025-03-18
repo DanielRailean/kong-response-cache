@@ -13,7 +13,10 @@ docker run --name redis -p 6379:6379 -e ALLOW_EMPTY_PASSWORD=yes -d bitnami/redi
 replace the env. var. with the actual path
 
 ```sh
-docker run --add-host=host.docker.internal:host-gateway -d --name kong-redis \
+docker run --add-host=host.docker.internal:host-gateway -d \
+  --name kong-redis \
+  --cpus=2 \
+  --memory=1024m \
   -e "KONG_DATABASE=off" \
   -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" \
   -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" \
