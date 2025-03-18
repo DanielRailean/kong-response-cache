@@ -88,15 +88,13 @@ local function store_cache_value(_, opts, key, req_obj, req_ttl)
   instance:expire(key, ttl)
 
   local _, err = instance:commit_pipeline()
-  if err then
-    kong.log.err("failed to commit the cache value to Redis: ", err)
-    return err
-  end
-
   local ok, err2 = instance:set_keepalive(opts.idle_timeout_ms)
   if not ok then
     kong.log.err("failed to set Redis keepalive: ", err2)
-    return err2
+  end
+  if err then
+    kong.log.err("failed to commit the cache value to Redis: ", err)
+    return err
   end
 end
 
@@ -122,6 +120,10 @@ function _M:fetch(key)
   end
 
   local cache_req, err = instance:hgetall(key)
+  local ok, err2 = instance:set_keepalive(self.opts.idle_timeout_ms)
+  if not ok then
+    kong.log.err("failed to set Redis keepalive: ", err2)
+  end
   if cache_req and #cache_req < 2 then
     if not err then
       -- this specific string is needed
@@ -129,12 +131,6 @@ function _M:fetch(key)
     else
       return nil, err
     end
-  end
-
-  local ok, err2 = instance:set_keepalive(self.opts.idle_timeout_ms)
-  if not ok then
-    kong.log.err("failed to set Redis keepalive: ", err2)
-    return nil, err2
   end
 
   cache_req           = instance:array_to_hash(cache_req)
