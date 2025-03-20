@@ -84,7 +84,8 @@ local function store_cache_value(_, opts, key, req_obj, req_ttl)
   end
 
   instance:init_pipeline(2)
-  instance:hmset(key, req_obj)
+  local val = cjson.encode(req_obj)
+  instance:set(key, val)
   instance:expire(key, ttl)
 
   local _, err = instance:commit_pipeline()
@@ -94,7 +95,7 @@ local function store_cache_value(_, opts, key, req_obj, req_ttl)
   end
   if err then
     kong.log.err("failed to commit the cache value to Redis: ", err)
-    return err
+    return nil, err
   end
 end
 
@@ -103,7 +104,6 @@ function _M:store(key, req_obj, req_ttl)
     return nil, "key must be a string"
   end
 
-  req_obj.headers = cjson.encode(req_obj.headers)
   ngx.timer.at(0, store_cache_value, self.opts, key, req_obj, req_ttl)
 
   return true
@@ -119,12 +119,12 @@ function _M:fetch(key)
     return nil, err_conn
   end
 
-  local cache_req, err = instance:hgetall(key)
+  local cache_req, err = instance:get(key)
   local ok, err2 = instance:set_keepalive(self.opts.idle_timeout_ms)
   if not ok then
     kong.log.err("failed to set Redis keepalive: ", err2)
   end
-  if cache_req and #cache_req < 2 then
+  if not cache_req or cache_req == ngx.null then
     if not err then
       -- this specific string is needed
       return nil, "request object not in cache"
@@ -133,15 +133,14 @@ function _M:fetch(key)
     end
   end
 
-  cache_req           = instance:array_to_hash(cache_req)
-  -- everything returned will be a string
-  cache_req.headers   = cjson.decode(cache_req.headers)
-  cache_req.version   = tonumber(cache_req.version)
-  cache_req.status    = tonumber(cache_req.status)
-  cache_req.body_len  = tonumber(cache_req.body_len)
-  cache_req.timestamp = tonumber(cache_req.timestamp)
-  cache_req.ttl       = tonumber(cache_req.ttl)
-  return cache_req
+  local res, err_d = cjson.decode(cache_req)
+  if err_d then
+    print(cache_req)
+    print(err_d)
+    return nil, "failed to decode"
+  end
+
+  return res
 end
 
 function _M:purge(key)
